@@ -5,6 +5,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <limits.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <fcntl.h>
 
 //////// Some function ideas: ////////////
 // Note: Some code is reflected in main that represents these functions,
@@ -154,7 +157,63 @@ ShellCommand parseInput(char* input){
         Pipe isn't required but could be a nice addition.
 */
 void executeCommand(ShellCommand command){
-    
+    if(command.command == NULL){ //if there is no command, return nothing
+        return;
+    }
+    //built in cd
+    if(strcmp(command.command, "cd") == 0){
+        if(command.args[1] == NULL){
+            fprintf(stderr, "cd: expected argument\n");
+        }
+        else{
+            if(chdir(command.args[1]) != 0){
+                perror("cd fail");
+            }
+        }
+        return;
+    }
+    //fork
+    pid_t pid = fork();
+    if(pid < 0){
+        perror("fork failed");
+        return;
+    }
+
+    //child process
+    if(pid == 0){
+        if(command.inputFile != NULL){
+            int fd = open(command.inputFile, O_RDONLY);
+            if(fd < 0){
+                perror("input redirection failed");
+                exit(1);
+            }
+            dup2(fd, STDIN_FILENO);
+            close(fd);
+        }
+        if(command.outputFile != NULL)
+        {
+            int fd;
+            if(command.append){
+                fd = open(command.outputFile, O_WRONLY | O_CREAT | O_APPEND, 0644);
+            }
+            else{
+                fd = open(command.outputFile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+            }
+            if(fd < 0){
+                perror("output redirection failed");
+                exit(1);
+            }
+            dup2(fd, STDOUT_FILENO);
+            close(fd);
+        }
+        execvp(command.command, command.args);
+        perror("exec failed");
+        exit(1);
+        }
+        else{
+            wait(NULL);
+        }
+    }
 }
 
 int main() // MAIN
@@ -175,7 +234,7 @@ int main() // MAIN
 	    command = parseInput(input);
 	    
 	    // execute the command
-        printf("You typed: %s\n", input);
+        /*printf("You typed: %s\n", input);
         if(command.command != NULL){
             printf("Command: %s\n", command.command);
             printf("Args:");
@@ -188,9 +247,9 @@ int main() // MAIN
 
         }
         free(input);
-	    //executeCommand(command);
+        */
+	    executeCommand(command);
 	}
-
-	return 0;
+	exit(0);
 }
 
