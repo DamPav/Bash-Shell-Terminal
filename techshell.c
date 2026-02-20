@@ -1,5 +1,5 @@
-// Name(s): Christian Smith
-// Description:
+// Name(s): Christian Smith, Damjan Pavlovic
+// Description: Creates a shell that takes inputs and executes commands such as cd and ls.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -80,14 +80,10 @@ char* getInput(){ // * is pointer that gets an input string
 typedef struct ShellCommand{
     char* command; //pointer to command like cd
     char** args; //argument array for first command
-    char* pipeCommand; //command after pipe
-    char** pipeArgs; //argument array for second command if pipe
     char* inputFile; //after <
     char* outputFile; // after >
     int append; //tells if there is > or >> etc.
-    int hasPipe; //tells if there is a pipe | between two commands
 } ShellCommand;
-
 
 ShellCommand parseInput(char* input){
     ShellCommand Sc;
@@ -95,45 +91,42 @@ ShellCommand parseInput(char* input){
     //Initialize variables
     Sc.command = NULL;
     Sc.args = NULL;
-    Sc.pipeArgs = NULL;
-    Sc.pipeCommand = NULL;
     Sc.inputFile = NULL;
     Sc.outputFile = NULL;
     Sc.append = 0;
-    Sc.hasPipe = 0;
     char* tokenInput = strdup(input);
     char* originalInput = strdup(input);
 
     int capacity = 0; //starts capacity counting
-    char* incrementToken = strtok(tokenInput, " ");
+    char* incrementToken = strtok(tokenInput, " "); 
     while(incrementToken != NULL){ //increments to see capacity size
         capacity++;
         incrementToken = strtok(NULL, " ");
     }
-    Sc.args = malloc((capacity+1) * sizeof(char*));
+    Sc.args = malloc((capacity+1) * sizeof(char*)); //sets memory size for args
     if(!Sc.args){
         perror("malloc");
         exit(1);
     }
     int i = 0;
-    char* token = strtok(originalInput, " ");
-    if(token != NULL) {Sc.command = token;}
+    char* token = strtok(originalInput, " "); //gets the first token
+    if(token != NULL) {Sc.command = token;} //sets token value as command if there is token
     while(token != NULL){
         if(strcmp(token, "<") != 0 && strcmp(token, ">") != 0 && strcmp(token, "|") != 0){
-            Sc.args[i++] = token;
+            Sc.args[i++] = token; //appends token value to args
         }
-        if(strcmp(token, "<") == 0){
+        if(strcmp(token, "<") == 0){ //if token is < make next equal inputFile
             Sc.inputFile = strtok(NULL, " ");
         }
-        else if(strcmp(token, ">") == 0){
+        else if(strcmp(token, ">") == 0){ //if token is > make next equal outputFile
             Sc.outputFile = strtok(NULL, " ");
-            Sc.append = 0;
+            Sc.append = 0; //redirects output into file
         }
-        else if(strcmp(token, ">>") == 0){
+        else if(strcmp(token, ">>") == 0){ //if token is >> make next equal outputFile
             Sc.outputFile = strtok(NULL, " ");
-            Sc.append = 1;
+            Sc.append = 1; //appends existing file
         }
-        else if(strcmp(token, "|") == 0){
+        else if(strcmp(token, "|") == 0){ //skips over pipes
             perror("No Pipes allowed"); 
         token = strtok(NULL, " ");
     }
@@ -160,7 +153,9 @@ ShellCommand parseInput(char* input){
         That is, there symbols: > and <. 
         Pipe isn't required but could be a nice addition.
 */
-
+void executeCommand(ShellCommand command){
+    
+}
 
 int main() // MAIN
 {
