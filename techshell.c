@@ -115,7 +115,7 @@ ShellCommand parseInput(char* input){
     char* token = strtok(originalInput, " "); //gets the first token
     if(token != NULL) {Sc.command = token;} //sets token value as command if there is token
     while(token != NULL){
-        if(strcmp(token, "<") != 0 && strcmp(token, ">") != 0 && strcmp(token, "|") != 0){
+        if(strcmp(token, "<") != 0 && strcmp(token, ">") != 0 && strcmp(token, "|") != 0 && strcmp(token, ">>")){
             Sc.args[i++] = token; //appends token value to args
         }
         if(strcmp(token, "<") == 0){ //if token is < make next equal inputFile
@@ -134,7 +134,7 @@ ShellCommand parseInput(char* input){
         }
         token = strtok(NULL, " ");
         }
-        
+
         Sc.args[i] = NULL;
         return Sc;
 }
