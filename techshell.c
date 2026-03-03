@@ -131,9 +131,12 @@ ShellCommand parseInput(char* input){
         }
         else if(strcmp(token, "|") == 0){ //skips over pipes
             perror("No Pipes allowed"); 
+        }
         token = strtok(NULL, " ");
-    }
-    return Sc;
+        }
+        
+        Sc.args[i] = NULL;
+        return Sc;
 }
 
 
@@ -162,11 +165,11 @@ void executeCommand(ShellCommand command){
     }
     //built in cd
     if(strcmp(command.command, "cd") == 0){
-        if(command.args[1] == NULL){
+        if(command.args[1] == NULL){ //no argument after cd
             fprintf(stderr, "cd: expected argument\n");
         }
         else{
-            if(chdir(command.args[1]) != 0){
+            if(chdir(command.args[1]) != 0){ //changes directory
                 perror("cd fail");
             }
         }
@@ -174,29 +177,31 @@ void executeCommand(ShellCommand command){
     }
     //fork
     pid_t pid = fork();
-    if(pid < 0){
+    if(pid < 0){ //if fork fails
         perror("fork failed");
         return;
     }
 
     //child process
     if(pid == 0){
-        if(command.inputFile != NULL){
-            int fd = open(command.inputFile, O_RDONLY);
-            if(fd < 0){
+        if(command.inputFile != NULL){ //if < is used
+            int fd = open(command.inputFile, O_RDONLY); //open file read only
+            if(fd < 0){ //if fail
                 perror("input redirection failed");
                 exit(1);
             }
             dup2(fd, STDIN_FILENO);
             close(fd);
         }
-        if(command.outputFile != NULL)
+        if(command.outputFile != NULL) //if > or >> used
         {
             int fd;
             if(command.append){
+                //open file for writing, create file if needed
                 fd = open(command.outputFile, O_WRONLY | O_CREAT | O_APPEND, 0644);
             }
             else{
+                //open file for writing, create file if needed. Truncate.
                 fd = open(command.outputFile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
             }
             if(fd < 0){
@@ -214,7 +219,7 @@ void executeCommand(ShellCommand command){
             wait(NULL);
         }
     }
-}
+
 
 int main() // MAIN
 {
