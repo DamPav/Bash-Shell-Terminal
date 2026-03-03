@@ -214,11 +214,11 @@ void executeCommand(ShellCommand command){
         execvp(command.command, command.args);
         perror("exec failed");
         exit(1);
-        }
-        else{
-            wait(NULL);
-        }
     }
+    else{
+        wait(NULL);
+    }
+}
 
 
 int main() // MAIN
